@@ -10,7 +10,7 @@ choosePitch <- function(pitcherID, fld_winning, inning, outs_when_up, balls, str
 # Returns a list with the following elements:
 # - result: (character) "ball", "strike", "foul", "single", "double", "triple", "home run", or "out"
 # - pitch: (character) the pitch thrown
-simPitch <- function(pitcherID, batterID, gameState, atBatState, randomSeed = NULL) {
+simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, balls, strikes, randomSeed = NULL) {
     if (!is.null(randomSeed)) {
         set.seed(randomSeed)
     } else {
@@ -23,7 +23,7 @@ simPitch <- function(pitcherID, batterID, gameState, atBatState, randomSeed = NU
 # Returns a list with the following elements:
 # - result: (character) "strikeout", "walk", "single", "double", "triple", "home run", or "out"
 # - pitches: (character vector) sequence of pitches thrown
-simAtBat <- function(pitcherID, batterID, gameState, randomSeed = NULL) {
+simAtBat <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, randomSeed = NULL) {
     # TODO
 }
 

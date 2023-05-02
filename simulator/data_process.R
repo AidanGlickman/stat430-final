@@ -38,6 +38,12 @@ write.csv(pitcher_speed, "data/pitcher_speed.csv")
 
 # make a dataframe containing only batter, pitch type, speed, and result
 batter_selected <- sc_selected |>
-  mutate(result = ifelse(type=='X', events, type)) |>
+  mutate(result = ifelse(type == "X", events, type)) |>
   select(batter, pitch_type, effective_speed, result) |>
+  # clean up the results. If the result contains the string "out", "double_play", "triple_play" or "sac", set it to out.
+  mutate(result = ifelse(grepl("out|double_play|triple_play|sac", result), "out", result)) |>
+  mutate(result = ifelse(grepl("fielders_choice|field_error", result), "single", result)) |>
+  filter(result != "game_advisory") |>
   drop_na()
+
+write.csv(batter_selected, "data/batter_selected.csv")

@@ -22,7 +22,7 @@ simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, bal
         set.seed(Sys.time())
     }
     # pitchtype <- choosePitch(pitcherID, fld_winning, inning, outs_when_up, balls, strikes)
-    pitchtype = "FF"
+    pitchtype <- "FF"
     row <- pitcher_speed |> filter(pitcher == pitcherID & pitch_type == pitchtype)
     speed <- rnorm(1, mean = row$speed_mean, sd = row$speed_std_dev)
 
@@ -34,7 +34,11 @@ simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, bal
         arrange(speed_diff) |>
         slice(1:30) |>
         select(result)
-    return(batter_results)
+    # for some extra randomness, add one each of S, B, out, single, double, triple, home_run
+    batter_results <- batter_results |>
+        add_row(result = c("S", "B", "out", "single", "double", "triple", "home_run"))
+    
+    return(batter_results |> sample_n(1))
 }
 
 # Simulates a single at-bat between a pitcher and a batter.

@@ -39,5 +39,5 @@ write.csv(pitcher_speed, "data/pitcher_speed.csv")
 # make a dataframe containing only batter, pitch type, speed, and result
 batter_selected <- sc_selected |>
   mutate(result = ifelse(type=='X', events, type)) |>
-  select(batter, pitch_type, effective_speed, result)
-  # drop_na()
+  select(batter, pitch_type, effective_speed, result) |>
+  drop_na()

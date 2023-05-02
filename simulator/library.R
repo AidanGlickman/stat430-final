@@ -1,5 +1,11 @@
 library(tidyverse)
 
+choosePitch <- function(pitcherID, fld_winning, inning, outs_when_up, balls, strikes){
+    # if a pitcher has faced this situation in game, randomly sample from those situations
+    
+    # otherwise, try again but ignore the inning and fld_winning columns
+}
+
 # Simulates a single pitch between a pitcher and a batter.
 # Returns a list with the following elements:
 # - result: (character) "ball", "strike", "foul", "single", "double", "triple", "home run", or "out"

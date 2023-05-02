@@ -1,5 +1,8 @@
 library(tidyverse)
 
+pitcher_pitchtypes <- read.csv('data/pitcher_pitchtypes.csv')
+pitcher_speed <- read.csv('data/pitcher_speed.csv')
+
 choosePitch <- function(pitcherID, fld_winning, inning, outs_when_up, balls, strikes){
     # if a pitcher has faced this situation in game, randomly sample from those situations
     

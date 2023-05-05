@@ -5,9 +5,17 @@ pitcher_speed <- read.csv("data/pitcher_speed.csv")
 batter_selected <- read.csv("data/batter_selected.csv")
 
 choosePitch <- function(pitcherID, fld_winning, inning, outs_when_up, balls, strikes) {
+    pitch <- "FF"
     # if a pitcher has faced this situation in game, randomly sample from those situations
-
-    # otherwise, try again but ignore the inning and fld_winning columns
+    pitches <- pitcher_pitchtypes |> filter(pitcher == pitcherID & fld_winning == fld_winning & inning == inning & outs_when_up == outs_when_up & balls == balls & strikes == strikes)
+    if(nrow(pitches) > 0){
+        pitch <- (pitches |> select(pitch_type) |> sample_n(1))
+    } else {
+        # otherwise, try again but ignore the inning and fld_winning columns
+        pitches <- pitcher_pitchtypes |> filter(outs_when_up == outs_when_up & balls == balls & strikes == strikes)
+        pitch <- pitches |> select(pitch_type) |> sample_n(1)
+    }
+    return(pitch[[1]])
 }
 
 # Simulates a single pitch between a pitcher and a batter.
@@ -21,8 +29,8 @@ simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, bal
     } else {
         set.seed(Sys.time())
     }
-    # pitchtype <- choosePitch(pitcherID, fld_winning, inning, outs_when_up, balls, strikes)
-    pitchtype <- "FF"
+    pitchtype <- choosePitch(pitcherID, fld_winning, inning, outs_when_up, balls, strikes)
+    print(pitchtype)
     row <- pitcher_speed |> filter(pitcher == pitcherID & pitch_type == pitchtype)
     speed <- rnorm(1, mean = row$speed_mean, sd = row$speed_std_dev)
 
@@ -37,8 +45,9 @@ simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, bal
     # for some extra randomness, add one each of S, B, out, single, double, triple, home_run
     batter_results <- batter_results |>
         add_row(result = c("S", "B", "out", "single", "double", "triple", "home_run"))
-    
-    return(batter_results |> sample_n(1))
+    result <- batter_results |> sample_n(1)
+    print(paste(pitchtype, speed, result))
+    return(result)
 }
 
 # Simulates a single at-bat between a pitcher and a batter.

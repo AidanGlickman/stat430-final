@@ -15,13 +15,7 @@ pitcher_pitchtypes <- sc_selected |>
   # make a column for each pitch type
   mutate(pitch_type = as.character(pitch_type)) |>
   group_by(pitcher, fld_winning, inning, inning_topbot, outs_when_up, balls, strikes) |>
-  drop_na() |>
-  count(pitch_type) |>
-  pivot_wider(names_from = pitch_type, names_prefix = "n_", values_from = n) |>
-  # fill in missing values for columns starting with n_
-  mutate(across(starts_with("n_"), ~ ifelse(is.na(.x), 0, .x))) |>
-  # make a variable n_total that is the total of all columns prefixed with n_
-  mutate(n_total = rowSums(across(starts_with("n_"))))
+  drop_na()
 
 write.csv(pitcher_pitchtypes, "data/pitcher_pitchtypes.csv")
 

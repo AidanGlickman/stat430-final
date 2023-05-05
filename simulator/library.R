@@ -23,14 +23,13 @@ choosePitch <- function(pitcherID, fld_winning, inning, outs_when_up, balls, str
 # - result: (character) "ball", "strike", "foul", "single", "double", "triple", "home run", or "out"
 # - pitch: (character) the pitch thrown
 # ex: simPitch(112526, 430832, TRUE, 1, 0, 0, 0)
-simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, balls, strikes, randomSeed = NULL) {
-    if (!is.null(randomSeed)) {
-        set.seed(randomSeed)
-    } else {
-        set.seed(Sys.time())
-    }
+simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, balls, strikes) {
+    # if (!is.null(randomSeed)) {
+    #     set.seed(randomSeed)
+    # } else {
+    #     set.seed(Sys.time())
+    # }
     pitchtype <- choosePitch(pitcherID, fld_winning, inning, outs_when_up, balls, strikes)
-    print(pitchtype)
     row <- pitcher_speed |> filter(pitcher == pitcherID & pitch_type == pitchtype)
     speed <- rnorm(1, mean = row$speed_mean, sd = row$speed_std_dev)
 
@@ -42,11 +41,10 @@ simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, bal
         arrange(speed_diff) |>
         slice(1:30) |>
         select(result)
-    # for some extra randomness, add one each of S, B, out, single, double, triple, home_run
+    # for some extra randomness, add some extras
     batter_results <- batter_results |>
-        add_row(result = c("S", "B", "out", "single", "double", "triple", "home_run"))
+        add_row(result = c("S", "B", "single", "double"))
     result <- batter_results |> sample_n(1)
-    print(paste(pitchtype, speed, result))
     return(result)
 }
 
@@ -54,8 +52,23 @@ simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, bal
 # Returns a list with the following elements:
 # - result: (character) "strikeout", "walk", "single", "double", "triple", "home run", or "out"
 # - pitches: (character vector) sequence of pitches thrown
-simAtBat <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, randomSeed = NULL) {
-    # TODO
+# ex. simAtBat(112526, 430832, TRUE, 1, 1, 0)
+simAtBat <- function(pitcherID, batterID, fld_winning, inning, outs_when_up) {
+    balls = 0
+    strikes = 0
+    pitches = list()
+    while(TRUE){
+        result <- simPitch(pitcherID, batterID, fld_winning, inning, outs_when_up, balls, strikes)
+        pitches = append(pitches, result)
+        if(result == "S"){ strikes = strikes + 1 }
+        else if(result == "B"){ balls = balls + 1 }
+        else{return(c(result, pitches))}
+        if(balls >= 4){
+            return(c("walk", pitches))
+        } else if(strikes >= 3){
+            return(c("strikeout", pitches))
+        }
+    }
 }
 
 # Simulates a game between two teams
@@ -64,13 +77,13 @@ simAtBat <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, ran
 # - homeScore: (integer) number of runs scored by the home team
 # - awayScore: (integer) number of runs scored by the away team
 # - report: (character vector) sequence of at-bats
-simGame <- function(homeTeamID, awayTeamID, randomSeed = NULL) {
+simGame <- function(homeTeamID, awayTeamID) {
     # TODO
 }
 
 # Simulates a round-robin tournament between a set of teams
 # Each repeat represents a home-away series between each pair of teams
 # Returns a dataframe with results for each game
-simTournament <- function(teamIDs, repeats = 2, randomSeed = NULL) {
+simTournament <- function(teamIDs, repeats = 2) {
     # TODO
 }

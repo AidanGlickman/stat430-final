@@ -15,13 +15,7 @@ pitcher_pitchtypes <- sc_selected |>
   # make a column for each pitch type
   mutate(pitch_type = as.character(pitch_type)) |>
   group_by(pitcher, fld_winning, inning, inning_topbot, outs_when_up, balls, strikes) |>
-  drop_na() |>
-  count(pitch_type) |>
-  pivot_wider(names_from = pitch_type, names_prefix = "n_", values_from = n) |>
-  # fill in missing values for columns starting with n_
-  mutate(across(starts_with("n_"), ~ ifelse(is.na(.x), 0, .x))) |>
-  # make a variable n_total that is the total of all columns prefixed with n_
-  mutate(n_total = rowSums(across(starts_with("n_"))))
+  drop_na()
 
 write.csv(pitcher_pitchtypes, "data/pitcher_pitchtypes.csv")
 
@@ -35,3 +29,15 @@ pitcher_speed <- sc_selected |>
   )
 
 write.csv(pitcher_speed, "data/pitcher_speed.csv")
+
+# make a dataframe containing only batter, pitch type, speed, and result
+batter_selected <- sc_selected |>
+  mutate(result = ifelse(type == "X", events, type)) |>
+  select(batter, pitch_type, effective_speed, result) |>
+  # clean up the results. If the result contains the string "out", "double_play", "triple_play" or "sac", set it to out.
+  mutate(result = ifelse(grepl("out|double_play|triple_play|sac", result), "out", result)) |>
+  mutate(result = ifelse(grepl("fielders_choice|field_error", result), "single", result)) |>
+  filter(result != "game_advisory") |>
+  drop_na()
+
+write.csv(batter_selected, "data/batter_selected.csv")

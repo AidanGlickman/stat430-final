@@ -1,8 +1,8 @@
 library(tidyverse)
 
-pitcher_pitchtypes <- read.csv("data/pitcher_pitchtypes.csv")
-pitcher_speed <- read.csv("data/pitcher_speed.csv")
-batter_selected <- read.csv("data/batter_selected.csv")
+# pitcher_pitchtypes <- read.csv("data/pitcher_pitchtypes.csv")
+# pitcher_speed <- read.csv("data/pitcher_speed.csv")
+# batter_selected <- read.csv("data/batter_selected.csv")
 
 choosePitch <- function(pitcherID, fld_winning, inning, outs_when_up, balls, strikes) {
     pitch <- "FF"
@@ -71,14 +71,87 @@ simAtBat <- function(pitcherID, batterID, fld_winning, inning, outs_when_up) {
     }
 }
 
+# runners will only advance on a force, wii sports style
+advanceRunners <- function(bases, num){
+    first = bases[[1]]
+    second = bases[[2]]
+    third = bases[[3]]
+    score = 0
+    home = TRUE
+    i = 0
+    while(i < num){
+        if(home | i > 0){
+            if(first | i > 1){
+                if(second | i > 2){
+                    if(third | i > 3){
+                        score = score + 1
+                        if(third){
+                            third = FALSE
+                        }
+                    }
+                    if(second){
+                    third = TRUE
+                    second = FALSE
+                    }
+                }
+                if(first){
+                second = TRUE
+                first = FALSE
+                }
+            }
+            if(home){
+            first = TRUE
+            home = FALSE
+            }
+        }
+        i = i + 1
+    }
+    return(list(c(first, second, third), score))
+}
+
+# simInningHalf(112526, 430832, 2, 0, 2)
+simInningHalf <- function(pitcherID, batterID, inning, fldScore, batScore){
+    outs = 0
+    score = batScore
+    bases = c(FALSE, FALSE, FALSE)
+    
+    while(outs < 3){
+        result <- simAtBat(pitcherID, batterID, fldScore >= score, inning, outs)[[1]]
+        if(result == "out" | result == "strikeout"){outs = outs + 1}
+        else{
+            advance = 0
+            if(result == "single" | result == "walk"){advance = 1}
+            if(result == "double"){advance = 2}
+            if(result == "triple"){advance = 3}
+            if(result == "home_run"){advance = 4}
+            advanced <- advanceRunners(bases, advance)
+            bases = advanced[[1]]
+            score = score + advanced[[2]]
+        }
+    }
+    return(score)
+}
+
 # Simulates a game between two teams
 # Returns a list with the following elements:
-# - winner: (character) "home" or "away"
 # - homeScore: (integer) number of runs scored by the home team
 # - awayScore: (integer) number of runs scored by the away team
 # - report: (character vector) sequence of at-bats
-simGame <- function(homeTeamID, awayTeamID) {
-    # TODO
+# Game Between Shohei, Shohei and Gallen, Pujols
+#simGame(660271,660271,668678,405395)
+simGame <- function(homePitcherID, homeBatterID, awayPitcherID, awayBatterID) {
+    inning = 1
+    homeScore = 0
+    awayScore = 0
+    while(TRUE){
+        if(inning > 9 & homeScore != awayScore){
+            return(c(homeScore, awayScore))
+        }
+        print(paste(inning, homeScore, awayScore))
+        awayScore = simInningHalf(homePitcherID, awayBatterID, inning, homeScore, awayScore)
+        homeScore = simInningHalf(awayPitcherID, homeBatterID, inning, awayScore, homeScore)
+        inning = inning + 1
+    }
 }
 
 # Simulates a round-robin tournament between a set of teams

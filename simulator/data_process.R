@@ -41,3 +41,17 @@ batter_selected <- sc_selected |>
   drop_na()
 
 write.csv(batter_selected, "data/batter_selected.csv")
+
+batterIDs <- sc |>
+  select(batter, batter_name) |>
+  rename(id = batter, name = batter_name) |>
+  unique()
+
+pitcherIDs <- sc |>
+  select(pitcher, pitcher_name) |>
+  rename(id = pitcher, name = pitcher_name) |>
+  unique()
+
+nameMap <- rbind(batterIDs, pitcherIDs)
+
+write.csv(nameMap, "data/name_id.csv")

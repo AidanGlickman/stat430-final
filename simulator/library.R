@@ -5,6 +5,9 @@ library(dplyr)
 # pitcher_speed <- read.csv("data/pitcher_speed.csv")
 # batter_selected <- read.csv("data/batter_selected.csv")
 
+# Chooses what pitch will be thrown in a given situation.
+# Ex. Shohei pitching, losing, 2nd inning, 0 outs, 2 balls, 1 strike
+# choosePitch(660271, FALSE, 2, 0, 2, 1)
 choosePitch <- function(pitcherID, fld_winning, inning, outs_when_up, balls, strikes) {
     pitch <- "FF"
     # if a pitcher has faced this situation in game, randomly sample from those situations
@@ -25,7 +28,7 @@ choosePitch <- function(pitcherID, fld_winning, inning, outs_when_up, balls, str
 # Returns a list with the following elements:
 # - result: (character) "ball", "strike", "foul", "single", "double", "triple", "home run", or "out"
 # - pitch: (character) the pitch thrown
-# ex: simPitch(112526, 430832, TRUE, 1, 0, 0, 0)
+# ex: simPitch(660271, 405395, FALSE, 1, 1, 1, 0)
 simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, balls, strikes) {
     # if (!is.null(randomSeed)) {
     #     set.seed(randomSeed)
@@ -35,7 +38,7 @@ simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, bal
     pitchtype <- choosePitch(pitcherID, fld_winning, inning, outs_when_up, balls, strikes)
     row <- pitcher_speed |> filter(pitcher == pitcherID & pitch_type == pitchtype)
     speed <- rnorm(1, mean = row$speed_mean, sd = row$speed_std_dev)
-
+    # print(paste("Threw a", pitchtype, "at", speed, "MPH"))
     # Now, we simulate how the batter does against this pitch.
     batter_results <- batter_selected |>
         filter(batter == batterID & pitch_type == pitchtype) |>
@@ -55,13 +58,14 @@ simPitch <- function(pitcherID, batterID, fld_winning, inning, outs_when_up, bal
 # Returns a list with the following elements:
 # - result: (character) "strikeout", "walk", "single", "double", "triple", "home run", or "out"
 # - pitches: (character vector) sequence of pitches thrown
-# ex. simAtBat(112526, 430832, TRUE, 1, 1, 0)
+# ex. simAtBat(660271, 405395, TRUE, 4, 2)
 simAtBat <- function(pitcherID, batterID, fld_winning, inning, outs_when_up) {
     balls <- 0
     strikes <- 0
     pitches <- list()
     while (TRUE) {
         result <- simPitch(pitcherID, batterID, fld_winning, inning, outs_when_up, balls, strikes)
+        # print(result)
         pitches <- append(pitches, result)
         if (result == "S") {
             strikes <- strikes + 1
@@ -116,14 +120,15 @@ advanceRunners <- function(bases, num) {
     return(list(c(first, second, third), score))
 }
 
-# simInningHalf(112526, 430832, 2, 0, 2)
+# simInningHalf(660271, 405395, 7, 4, 3)
 simInningHalf <- function(pitcherID, batterID, inning, fldScore, batScore) {
     outs <- 0
     score <- batScore
     bases <- c(FALSE, FALSE, FALSE)
-
     while (outs < 3) {
+        # print(paste("State:", bases[[1]], bases[[2]], bases[[3]], "Outs:", outs))
         result <- simAtBat(pitcherID, batterID, fldScore >= score, inning, outs)[[1]]
+        # print(paste("At Bat Result: ", result))
         if (result == "out" | result == "strikeout") {
             outs <- outs + 1
         } else {
@@ -163,7 +168,9 @@ simGame <- function(homePitcherID, homeBatterID, awayPitcherID, awayBatterID) {
         if (inning > 9 & homeScore != awayScore) {
             return(c(homeScore, awayScore))
         }
+        print(paste("Top of", inning, "Home:", homeScore, "Away:", awayScore))
         awayScore <- simInningHalf(homePitcherID, awayBatterID, inning, homeScore, awayScore)
+        print(paste("Bottom of", inning, "Home:", homeScore, "Away:", awayScore))
         homeScore <- simInningHalf(awayPitcherID, homeBatterID, inning, awayScore, homeScore)
         inning <- inning + 1
     }

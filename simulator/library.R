@@ -168,9 +168,9 @@ simGame <- function(homePitcherID, homeBatterID, awayPitcherID, awayBatterID) {
         if (inning > 9 & homeScore != awayScore) {
             return(c(homeScore, awayScore))
         }
-        print(paste("Top of", inning, "Home:", homeScore, "Away:", awayScore))
+        # print(paste("Top of", inning, "Home:", homeScore, "Away:", awayScore))
         awayScore <- simInningHalf(homePitcherID, awayBatterID, inning, homeScore, awayScore)
-        print(paste("Bottom of", inning, "Home:", homeScore, "Away:", awayScore))
+        # print(paste("Bottom of", inning, "Home:", homeScore, "Away:", awayScore))
         homeScore <- simInningHalf(awayPitcherID, homeBatterID, inning, awayScore, homeScore)
         inning <- inning + 1
     }
